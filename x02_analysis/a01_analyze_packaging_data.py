@@ -1,19 +1,18 @@
-#!/usr/bin/env python
+
 # coding: utf-8
 
 # # Packaging analysis 
 # 
 # Analysis of how single mutations to the AAV2 capsid affect packaging  
 # Includes: 
-# - analysis of library and number of mutations succesful assayed at barcode/codon/amin acid level 
+# - analysis of library and number of mutations succesful assayed at barcode/codon/amino acid level 
 # - plots comparing plasmid frequency to codon frequency 
 # - packaging experiment replicates analysis 
 # - analysis of stop codon mutations vs WT
-# - heatmap of all amino acid substituions, insertions and deletions 
-# - analysis of phylogentic mutation phenotype 
+# - heatmap of all amino acid substitutions, insertions and deletions 
+# - analysis of phylogenetic mutation phenotype 
 
 # In[1]:
-
 
 import os 
 import sys 
@@ -29,8 +28,8 @@ from scipy.stats import variation
 from scipy.stats import ks_2samp,mannwhitneyu,pearsonr,variation,ranksums
 import scipy.stats as stats
 
-get_ipython().run_line_magic('reload_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
+get_ipython().magic(u'reload_ext autoreload')
+get_ipython().magic(u'autoreload 2')
 sys.path.append('../x01_process_data//')
 import x02_load_dataframes
 import x03_compute_selections
@@ -45,7 +44,6 @@ sns.set(**PAPER_PRESET)
 
 # In[2]:
 
-
 packaging_counts = x02_load_dataframes.load_packaging_df()
 packaging_counts.head()
 
@@ -53,7 +51,6 @@ packaging_counts.head()
 # ### how often each mutation is seen in terms of amino acid / codon / barcode 
 
 # In[3]:
-
 
 packaging_counts_plasmid = packaging_counts.loc[:,pd_idx['CMV','plasmid','0']].sum(axis=1).reset_index()
 barcodes_seen = packaging_counts_plasmid[packaging_counts_plasmid[0]>0][0].count()
@@ -64,7 +61,6 @@ print ("%s barcodes seen of %s total barcodes, Percent: %.3f" % (barcodes_seen,b
 
 # In[4]:
 
-
 packaging_counts_plasmid = packaging_counts.loc[:,pd_idx['CMV','plasmid','0']].sum(axis=1).reset_index()
 barcodes_seen = packaging_counts_plasmid[packaging_counts_plasmid[0]>0][0].count()
 barcodes_total = float(packaging_counts_plasmid[0].count())
@@ -74,14 +70,12 @@ print ("%s barcodes seen of %s total barcodes, Percent: %.3f" % (barcodes_seen,b
 
 # In[5]:
 
-
 codon_count = packaging_counts_plasmid.groupby(['abs_pos', 'codon','tile_num'])[0].sum()
 print ("%s codons seen of %s total codons, Percent: %.3f" % (
     codon_count[codon_count>0].count(), codon_count.count() , 100*(codon_count[codon_count>0].count() / float(codon_count.count()))))
 
 
 # In[6]:
-
 
 aa_count = packaging_counts_plasmid.groupby(['abs_pos', 'aa','tile_num'])[0].sum()
 print ("%s AA seen of %s total AA, Percent: %.3f" % (
@@ -91,7 +85,6 @@ print ("%s AA seen of %s total AA, Percent: %.3f" % (
 # ### distribution of counts (Fig. S2A)
 
 # In[7]:
-
 
 fig,ax =plt.subplots(figsize=(1.5,1.5))
 
@@ -107,7 +100,6 @@ print ("Average read number per barcode: %.3e"  % packaging_counts_plasmid[0].me
 
 # In[8]:
 
-
 def correlation_plot(x, y,
                      scatter_kwargs={}, plot_kwargs={}):
     plt.scatter(x, y, **scatter_kwargs)
@@ -117,10 +109,9 @@ def correlation_plot(x, y,
     plt.plot(line_x, line_y, **plot_kwargs)
 
 
-# first determine the frequencies for plotting, along with wilt type normalziation for point color
+# first determine the frequencies for plotting, along with wild type normalization for point color
 
 # In[9]:
-
 
 package_counts_summed_freq = packaging_counts.groupby(
     level=['promoter', 'source'],axis=1).sum().apply(
@@ -134,12 +125,10 @@ package_counts_summed_freq_sample.head()
 
 # In[10]:
 
-
 package_counts_summed_freq_wt_barcodes = package_counts_summed_freq.xs(1, level='wt_bc')
 
 
 # In[11]:
-
 
 fig,ax =plt.subplots(figsize=(1.5,1.5))
 
@@ -156,16 +145,14 @@ plt.ylim(-8, -3)
 
 # In[12]:
 
-
 package_bio_replicates_selection = x03_compute_selections.compute_packaging_selection(
     packaging_counts,level='codon', wt_norm=True, sum_measurments=False, for_plotting=False)
 package_bio_replicates_selection.head()
 
 
-# ### compare CMV-AAV2 lib production replicaties
+# ### compare CMV-AAV2 lib production replicates
 
 # In[13]:
-
 
 cmap=plt.cm.jet
 joint_kws=dict(gridsize=200, cmap='inferno', mincnt=2,alpha=.5)
@@ -183,10 +170,9 @@ cb.outline.set_visible(False)
 plt.show()
 
 
-# ### compare Rep-AAV2 lib production replicaties
+# ### compare Rep-AAV2 lib production replicates
 
 # In[14]:
-
 
 cmap=plt.cm.jet
 joint_kws=dict(gridsize=200, cmap='inferno', mincnt=2,alpha=.5)
@@ -204,10 +190,9 @@ cb.outline.set_visible(False)
 plt.show()
 
 
-# ### compare Rep-AAV2 vs CMV-AAV2 lib production replicaties
+# ### compare Rep-AAV2 vs CMV-AAV2 lib production replicates
 
 # In[15]:
-
 
 cmap=plt.cm.jet
 joint_kws=dict(gridsize=200, cmap='inferno', mincnt=2,alpha=.5)
@@ -225,17 +210,15 @@ cb.outline.set_visible(False)
 plt.show()
 
 
-# ## Wildtype Vs VP1/2/3 Stops (Fig. 1C)
+# ## Wildtype Vs VP1/2/3 stop codons (Fig. 1C)
 
 # In[16]:
-
 
 package_barcode_full_sum = x03_compute_selections.compute_packaging_selection(
     packaging_counts,level='barcode', wt_norm=True, sum_measurments=True, for_plotting=False)
 
 
 # In[17]:
-
 
 set_2_colors = sns.color_palette("colorblind")
 VP2_START = 139
@@ -259,22 +242,19 @@ g.set_xlim((-8,2))
 plt.legend(frameon=False,columnspacing=.1,handlelength=1,fontsize=6)
 
 
-# ## effect sizes for difference WT vs stop difference
+# effect sizes for WT vs stop difference
 
 # In[18]:
-
 
 np.median(WT.flatten())
 
 
 # In[19]:
 
-
 np.median(VP3_stops.flatten())
 
 
 # In[20]:
-
 
 np.median(VP12_stops.flatten())
 
@@ -283,14 +263,12 @@ np.median(VP12_stops.flatten())
 
 # In[21]:
 
-
 np.median(WT.flatten()) - np.median(VP3_stops.flatten())
 
 
 # log2 mean difference WT vs VP12 stops
 
 # In[22]:
-
 
 np.median(WT.flatten()) - np.median(VP12_stops.flatten())
 
@@ -299,24 +277,20 @@ np.median(WT.flatten()) - np.median(VP12_stops.flatten())
 
 # In[23]:
 
-
 mannwhitneyu(WT.flatten(), VP3_stops.flatten())
 
 
 # In[24]:
-
 
 mannwhitneyu(WT, VP12_stops)
 
 
 # In[25]:
 
-
 variation(2**WT)
 
 
 # In[26]:
-
 
 package_barcode_full_sum.xs(1,level='wt_bc').describe()
 
@@ -325,22 +299,19 @@ package_barcode_full_sum.xs(1,level='wt_bc').describe()
 
 # In[27]:
 
-
 package_aa_full_sum = x03_compute_selections.compute_packaging_selection(
     packaging_counts,level='aa', wt_norm=True, sum_measurments=True, for_plotting=True)
 
 
 # In[28]:
 
-
 DESIRED_AA_ORD = ["-","I", "L", "V", "A", "G", "M", "F", "Y", "W", "E", 
                     "D", "Q", "N", "H", "C", "R", "K", "S", "T", "P", "*"]
 
 
-# data shaping for heatmap generation
+# reshape data for heatmap generation
 
 # In[29]:
-
 
 sub_del = package_aa_full_sum.query("lib_type.isin(['sub','del'])").xs('CMV', level=0,axis=1)
 sub_del.index = sub_del.index.droplevel(['lib_type', 'is_wt_aa'])
@@ -361,7 +332,6 @@ ins_subs_stacked = pd.concat([ins_df_matrix_ordered,sub_del_matrix_aa_ordered])
 
 # In[30]:
 
-
 fig,ax = plt.subplots(figsize = [8,2.5])
 g = sns.heatmap(ins_subs_stacked.apply(np.log2),vmin=-5,vmax=5,
                 cmap='RdBu_r',cbar=None,xticklabels=50,yticklabels=1)
@@ -378,7 +348,6 @@ ax.tick_params(length=.5)
 
 # In[31]:
 
-
 a = np.array([[-5,5]])
 fig = plt.figure(figsize=(.1, 2))
 img = plt.imshow(a, cmap="RdBu_r")
@@ -389,10 +358,9 @@ plt.ylabel('log2(selection)')
 # save_fig(fig, 'heatmap_colorbar.pdf',transparent=True)
 
 
-# ## Variable region analysis
+# Variable regions used in serotype analysis below
 
 # In[32]:
-
 
 VR_1 = np.arange(262,269,.5)
 VR_2 = np.arange(326,331,.5)
@@ -409,7 +377,6 @@ VR_LIST = np.concatenate([VR_1,VR_2,VR_4,VR_5,VR_6,VR_7,VR_8,VR_9])
 
 # In[33]:
 
-
 vr_df = package_aa_full_sum.query("abs_pos in (@VR_LIST) & is_wt_aa==0").iloc[
     :,0].dropna().apply(np.log2)
 conserved_df =package_aa_full_sum.query("(abs_pos not in (@VR_LIST)) &     (abs_pos > 211)  & is_wt_aa ==0").iloc[:,0].dropna().apply(np.log2)
@@ -417,14 +384,12 @@ conserved_df =package_aa_full_sum.query("(abs_pos not in (@VR_LIST)) &     (abs_
 
 # In[34]:
 
-
 vr_array = vr_df.values
 conserved_array = conserved_df.dropna().values
 vr_array.shape
 
 
 # In[35]:
-
 
 conserved_array.shape
 
@@ -434,7 +399,6 @@ conserved_array.shape
 # determine alignment positions relative to AAV2 capsid position
 
 # In[39]:
-
 
 AAV_alignments = AlignIO.parse('../data/meta/AAV_protein_alignment.phy','phylip')
 
@@ -469,7 +433,6 @@ alignment_df = calculate_aligment_positions(AAV_alignments)
 
 # In[40]:
 
-
 def get_residue_differences(alignemnt_df):
     aav_diffs = []
 
@@ -488,7 +451,6 @@ differences_aav_seroptypes_df.shape
 
 # In[41]:
 
-
 alignment_aa = alignment_df[[x for x in alignment_df.columns if '_aa' in x]]
 alignment_aa
 conservation = []
@@ -498,13 +460,11 @@ for idx, row in alignment_aa.iterrows():
 
 # In[42]:
 
-
 aav2_cons = pd.concat([alignment_df['aav2_pos'], pd.DataFrame(conservation)],axis=1)
 aav2_cons[aav2_cons['aav2_pos'] != 0].dropna()[0].to_csv('../data/meta/conservation.csv', index=False)
 
 
 # In[43]:
-
 
 def subset_fitness_residues(diff_df, fitness_df):
     serotype_fitness_df = pd.DataFrame()
@@ -519,19 +479,16 @@ serotype_fitness_df = subset_fitness_residues(differences_aav_seroptypes_df, pac
 
 # In[44]:
 
-
 non_vr_other_serotypes = serotype_fitness_df.query("abs_pos not in @VR_LIST").iloc[:,0].dropna().apply(np.log2)
 vr_other_serotypes = serotype_fitness_df.query("abs_pos  in @VR_LIST").iloc[:,0].dropna().apply(np.log2)
 
 
 # In[45]:
 
-
 vr_df_not_in_other_serotypes = vr_df[~vr_df.isin(vr_other_serotypes)]
 
 
 # In[46]:
-
 
 def melt_for_box_plot(vr_df, sero_df, cons_df, sero_vr_df):
     vr_df_plot  = vr_df.reset_index()
@@ -548,7 +505,6 @@ def melt_for_box_plot(vr_df, sero_df, cons_df, sero_vr_df):
 
 
 # In[47]:
-
 
 fig, ax =plt.subplots(figsize=[2.64,2])
 fit_df = melt_for_box_plot(vr_df, non_vr_other_serotypes, conserved_df,vr_other_serotypes)
@@ -567,7 +523,6 @@ ax.yaxis.grid(True, which='minor')
 
 # In[48]:
 
-
 pvals=[]
 for col_1 in fit_df['type'].unique():
     for col_2 in fit_df['type'].unique():
@@ -582,7 +537,6 @@ pd.DataFrame(pvals)
 
 
 # In[ ]:
-
 
 
 

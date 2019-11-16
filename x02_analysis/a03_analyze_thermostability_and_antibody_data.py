@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+
 # coding: utf-8
 
 # # Thermostability and antibody neutralization analysis
 
 # In[1]:
-
 
 import os 
 import sys 
@@ -20,8 +19,8 @@ from scipy.stats import pearsonr
 
 
 from common import mm_to_inch,load_axis_contacts
-get_ipython().run_line_magic('reload_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
+get_ipython().magic(u'reload_ext autoreload')
+get_ipython().magic(u'autoreload 2')
 sys.path.append('../x01_process_data/')
 import x02_load_dataframes
 import x03_compute_selections
@@ -40,19 +39,16 @@ sns.set(**PAPER_PRESET)
 
 # In[2]:
 
-
 package_data = x02_load_dataframes.load_packaging_df()
 tm_data = x02_load_dataframes.load_thermostability_df()
 
 
 # In[3]:
 
-
 tm_selection_dict = x03_compute_selections.compute_tm_selection(package_data, tm_data,wt_norm=True,sum_all=True)
 
 
 # In[4]:
-
 
 tma_aa_selection = tm_selection_dict['aa_selection']
 tma_barcode_selection = tm_selection_dict['barcode_selection']
@@ -61,7 +57,6 @@ tma_aa_mean.head()
 
 
 # In[5]:
-
 
 package_aa_sel = x03_compute_selections.compute_packaging_selection(package_data, level='aa')
 package_barcode_sel = x03_compute_selections.compute_packaging_selection(package_data, level='barcode')
@@ -75,8 +70,8 @@ tm_barcode_filtered = codon_to_aa_selector(
     package_aa_sel[package_aa_sel[('CMV','0')]>.5], tma_barcode_selection)
 
 
-# In[6]:
 
+# In[6]:
 
 package_aa_sel_filtered_all = package_aa_sel_filtered.iloc[:,:2]
 package_aa_sel_filtered_all.columns = package_aa_sel_filtered_all.columns.droplevel(1)
@@ -86,13 +81,11 @@ package_aa_sel_filtered_all.head()
 
 # In[7]:
 
-
 tma_aa_mean.index = tma_aa_mean.index.droplevel(2)
 tma_aa_mean.head()
 
 
 # In[8]:
-
 
 tm_package_compare = package_aa_sel_filtered_all.join(tma_aa_mean,how='inner')
 tm_package_compare.dropna(inplace=True)
@@ -102,7 +95,6 @@ tm_package_compare.head()
 # ### histogram of selection values across temperatures
 
 # In[9]:
-
 
 tms_good = ['55','60','65','66','67','68']
 fig, axes = plt.subplots(ncols=1, nrows=6, sharex=True, sharey=True, figsize=(2,7))
@@ -122,10 +114,9 @@ for tm, ax in zip(tms_good, axes.flatten()):
 plt.tight_layout()
 
 
-# ### positional frequency of mutations in the left tail of selection distribution less than log2(-2.5)
+# ### positional frequency of mutations in the left tail of selection distribution - less than log2(-2.5) 
 
 # In[10]:
-
 
 tm_aa_left_tail = tm_aa_filtered[tm_aa_filtered < (2**-2.5)]
 fig, axes = plt.subplots( nrows=6, sharex=True, sharey=True, figsize=(5,7))
@@ -140,7 +131,6 @@ plt.tight_layout()
 
 # In[11]:
 
-
 tm_65_percents = tm_aa_left_tail.groupby(level='abs_pos').apply(
         lambda x: x.count()/len(x)).xs(('CMV2', tm), level=['virus', 'tm'], axis=1).reset_index()
 tm_65_percents.columns = tm_65_percents.columns.droplevel(1)
@@ -150,10 +140,9 @@ tm_65_percents_subs['abs_pos']  = tm_65_percents_subs['abs_pos'].apply(int)
 
 # ### load known AAV2 contatcs from VIPERDB 
 # add selection values for each contact  
-# webisite: http://viperdb.scripps.edu/
+# website: http://viperdb.scripps.edu/
 
 # In[12]:
-
 
 contacts_df = load_axis_contacts()
 contacts_df_with_tm_freq =  contacts_df.merge(
@@ -166,7 +155,6 @@ contacts_df_with_tm_freq.sort_values('CMV2_x',ascending = False).head()
 
 # In[13]:
 
-
 two_fold = contacts_df_with_tm_freq[['A1-A6 (I-2)', 'CMV2_x', 'CMV2_y', 'abs_pos_x', 'abs_pos_y']].dropna()
 two_fold_deduped = pd.concat([pd.concat([two_fold['CMV2_x'],two_fold['CMV2_y']] ), 
 pd.concat([two_fold['abs_pos_x'],two_fold['abs_pos_y']] )],axis=1).drop_duplicates()
@@ -177,12 +165,10 @@ two_fold_deduped.head()
 
 # In[14]:
 
-
 three_fold = contacts_df_with_tm_freq[['A1-A7 (I-3)', 'CMV2_x', 'CMV2_y', 'abs_pos_x', 'abs_pos_y']].dropna()
 
 
 # In[15]:
-
 
 three_fold_deduped = pd.concat([pd.concat([three_fold['CMV2_x'],three_fold['CMV2_y']] ), 
 pd.concat([three_fold['abs_pos_x'],three_fold['abs_pos_y']] )],axis=1).drop_duplicates()
@@ -193,13 +179,11 @@ three_fold_deduped.head()
 
 # In[16]:
 
-
 five_fold_1 = contacts_df_with_tm_freq[['A1-A2 (I-5)', 'CMV2_x', 'CMV2_y', 'abs_pos_x', 'abs_pos_y']].dropna()
 five_fold_1.head()
 
 
 # In[17]:
-
 
 five_fold_deduped = pd.concat([pd.concat([five_fold_1['CMV2_x'],five_fold_1['CMV2_y']] ), 
 pd.concat([five_fold_1['abs_pos_x'],five_fold_1['abs_pos_y']] )],axis=1).drop_duplicates()
@@ -208,10 +192,9 @@ five_fold_deduped.head()
 
 # ### P-Value 3-fold contacts vs all other positions
 
-# first subest three-fold vs everything else
+# first subset three-fold vs everything else
 
 # In[18]:
-
 
 not_three_fold = tm_65_percents_subs[~tm_65_percents_subs['abs_pos'].isin(three_fold_deduped[1])]
 not_three_fold.head()
@@ -219,12 +202,10 @@ not_three_fold.head()
 
 # In[19]:
 
-
 not_three_fold['CMV2'].mean() - three_fold_deduped[0].mean()
 
 
 # In[20]:
-
 
 not_three_fold_proportion = (len(not_three_fold.loc[not_three_fold['CMV2'] > 0]) / len(not_three_fold))
 three_fold_proportion = len(three_fold_deduped.loc[three_fold_deduped[0] > 0]) / len(three_fold_deduped)
@@ -234,7 +215,6 @@ three_fold_proportion/not_three_fold_proportion
 
 
 # In[21]:
-
 
 import scipy.stats as stats
 def two_proprotions_confint(success_a, size_a, success_b, size_b, significance = 0.05):
@@ -275,7 +255,6 @@ def two_proprotions_confint(success_a, size_a, success_b, size_b, significance =
 
 # In[22]:
 
-
 null_obs = len(not_three_fold)
 null_successes = len(not_three_fold.loc[not_three_fold['CMV2'] > 0]) 
 threefold_obs = len(three_fold_deduped)
@@ -292,13 +271,11 @@ two_proprotions_confint(success_a=threefold_sucesses,
 
 # In[23]:
 
-
 antibody_counts = x02_load_dataframes.load_antibody_df()
 antibody_counts.head()
 
 
 # In[24]:
-
 
 antibody_selection_df= x03_compute_selections.compute_antibody_selection(
             ab_counts=antibody_counts, package_counts=package_data, wt_norm=True)
@@ -308,7 +285,6 @@ antibody_selection_df.head()
 # ### histogram of a20 interacting residues vs not 
 
 # In[25]:
-
 
 a20_postions_subs = np.array([261,262,263,264,384,385,708,717,258,253,254,658,659,660,548,556])
 
@@ -352,17 +328,13 @@ plot_a20_dist(antibody_selection_df,figname = None)
 
 # In[26]:
 
-
-# plot_a20_dist(ab_aa_df,plot_zoom=True,legend_on=False, 
-#               figname = "a03_PO08b_antibody_a20pos_vs_adjacent_comparison_inset.pdf")
 wt, a20 = plot_a20_dist(antibody_selection_df,plot_zoom=True,legend_on=False, 
               figname = None, return_values=True)
 
 
-# ### efect size and p-value for known a20 interactiong positions vs not
+# ### effect size and p-value for known a20 interacting positions vs not
 
 # In[27]:
-
 
 wt_successes = len(wt[wt > 2.5])
 wt_obs = len(wt)
@@ -377,7 +349,6 @@ print ('effect size: %s' % (proportion_a20 / proportion_wt))
 
 # In[28]:
 
-
 two_proprotions_confint(success_a=wt_successes,
                         size_a=wt_obs, 
                         success_b=a20_successes, 
@@ -385,17 +356,15 @@ two_proprotions_confint(success_a=wt_successes,
                         significance = 1e-16)
 
 
-# ### heatmap of selection values for postions known to interact with a20
+# ### heatmap of selection values for positions known to interact with a20
 
 # In[29]:
-
 
 antibody_selection_mean = antibody_selection_df.mean(axis=1)
 antibody_selection_mean.head()
 
 
 # In[30]:
-
 
 antibody_selection_mean_for_heatmap = antibody_selection_mean.unstack(0).query("wt_bc==0").query("lib_type.isin(['sub','del'])")
 antibody_selection_mean_for_heatmap = antibody_selection_mean_for_heatmap.loc[:,a20_postions_subs]
@@ -406,7 +375,6 @@ antibody_selection_mean_for_heatmap.head()
 
 # In[31]:
 
-
 sns.set(**PAPER_PRESET)
 fig,ax =plt.subplots(figsize=[3.174*1.5, 1.625*1.5])
 sns.heatmap(antibody_selection_mean_for_heatmap.apply(np.log2), cmap='RdBu_r', vmin=-10, vmax=10, ax=ax, yticklabels=True)
@@ -415,7 +383,6 @@ ax.set_xlabel("VP Position")
 
 
 # In[32]:
-
 
 all_residues = antibody_selection_mean.apply(np.log2).dropna()
 a20_residues = antibody_selection_mean.loc[a20_postions_subs].apply(np.log2).dropna()

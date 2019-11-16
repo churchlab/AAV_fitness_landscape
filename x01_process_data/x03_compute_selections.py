@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+
 # coding: utf-8
 
 # In[1]:
-
 
 from __future__ import print_function
 import pandas as pd 
@@ -14,7 +13,6 @@ import x02_load_dataframes
 
 # In[2]:
 
-
 package_counts = x02_load_dataframes.load_packaging_df()
 mouse_counts = x02_load_dataframes.load_mouse_df()
 # ab_counts =x02_load_dataframes.load_antibody_df()
@@ -25,7 +23,6 @@ mouse_counts = x02_load_dataframes.load_mouse_df()
 
 # In[3]:
 
-
 def drop_bad_reps(package_df):
     return package_df.drop(labels=[('CMV', 'virus', '1', 'a','count', 'GEN00105095'),
                                    ('CMV', 'virus', '2', 'a','count',  'GEN00105096'),
@@ -35,7 +32,6 @@ def drop_bad_reps(package_df):
 
 
 # In[4]:
-
 
 def compute_packaging_selection(df_in=None,
                       level='barcode',
@@ -137,7 +133,6 @@ def compute_packaging_selection(df_in=None,
 
 # In[5]:
 
-
 def compute_mouse_selections(package_counts, 
                              mouse_counts,
                              wt_norm=False,
@@ -218,7 +213,6 @@ def compute_mouse_selections(package_counts,
 
 # In[6]:
 
-
 def compute_antibody_selection(package_counts, ab_counts,
                                wt_norm=True):
     
@@ -243,7 +237,6 @@ def compute_antibody_selection(package_counts, ab_counts,
 
 
 # In[7]:
-
 
 def compute_tm_selection(package_counts, tm_counts,sum_all=False, wt_norm=False):
     package_counts = drop_bad_reps(package_counts)
@@ -295,7 +288,6 @@ def compute_tm_selection(package_counts, tm_counts,sum_all=False, wt_norm=False)
 
 # In[8]:
 
-
 def compute_maap_selection( package_counts,maap_counts,wt_norm=True ,level='codon'):
     package_counts = drop_bad_reps(package_counts)
     if level =='codon':
@@ -321,7 +313,6 @@ def compute_maap_selection( package_counts,maap_counts,wt_norm=True ,level='codo
 
 
 # In[ ]:
-
 
 
 

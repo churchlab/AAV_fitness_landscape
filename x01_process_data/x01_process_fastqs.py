@@ -1,12 +1,11 @@
-#!/usr/bin/env python
+
 # coding: utf-8
 
 # # Process fastqs from geo into count files 
-# NOTE: you will have to the fastqs you wish to process from GEO/SRA and place them in `/data/fastqs/` for this script to function  
+# NOTE: you will have to download the fastqs you wish to process from GEO/SRA and place them in `/data/fastqs/` for this script to function  
 # If you wish to start with processed data, you can skip directly to notebooks in dir `/x02_analysis`
 
 # In[1]:
-
 
 import pandas as pd 
 import re
@@ -25,13 +24,11 @@ import bz2
 
 # In[2]:
 
-
 meta_df = pd.read_excel('../data/meta/GSE139657_meta.xls', 
                        skiprows=21,nrows=170 )
 
 
 # In[3]:
-
 
 meta_df.head()
 
@@ -39,7 +36,6 @@ meta_df.head()
 # functions used to count barcodes and write counts 
 
 # In[4]:
-
 
 def tabulate(key, counts):
     # add 1 to count for this key, or add it to the dictionary
@@ -62,7 +58,6 @@ def write_counts(dict, outputfile):
 # ### using a row from the geo meta data, compute the counts for each barcode across all associated fastqs
 
 # In[5]:
-
 
 def count_ligated_bars(output_path = '../data/',
                        count_dir_name = 'counts',
@@ -132,14 +127,12 @@ def count_ligated_bars(output_path = '../data/',
 
 # In[6]:
 
-
 count_ligated_bars(meta_df_row = meta_df.iloc[2])
 
 
 # ### merge the barcode counts onto the meta-data table
 
 # In[11]:
-
 
 barcode_to_mutant_table = pd.read_csv('../data/meta/AAV2scan_chip_lookup_table.txt')
 def assemble_dataframe(meta_df_row=meta_df.iloc[2], mutant_info_df = barcode_to_mutant_table ,save=False):
@@ -156,13 +149,11 @@ def assemble_dataframe(meta_df_row=meta_df.iloc[2], mutant_info_df = barcode_to_
 
 # In[12]:
 
-
 count_data_with_mutant_info_df = assemble_dataframe()
 count_data_with_mutant_info_df.head()
 
 
 # In[ ]:
-
 
 
 

@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+
 # coding: utf-8
 
 # # Heatmaps for all codon positions across Rep and CMV libraries
 
 # In[1]:
-
 
 import os 
 import sys 
@@ -37,12 +36,11 @@ from paper_settings import save_fig
 PAPER_PRESET['font'] = 'monospace'
 sns.set(**PAPER_PRESET)
 
-get_ipython().run_line_magic('reload_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
+get_ipython().magic(u'reload_ext autoreload')
+get_ipython().magic(u'autoreload 2')
 
 
 # In[2]:
-
 
 packaging_counts = x02_load_dataframes.load_packaging_df()
 packaging_counts.head()
@@ -50,16 +48,14 @@ packaging_counts.head()
 
 # In[8]:
 
-
 package_bio_codon_plotting_selection = x03_compute_selections.compute_packaging_selection(
     packaging_counts,level='codon', wt_norm=True, sum_measurments=True, for_plotting=True)
 package_bio_codon_plotting_selection.head()
 
 
-# ### CMV substituions
+# ### CMV substitutions
 
 # In[9]:
-
 
 for x in range(0,735, 147):
     plot_heatmap(package_bio_codon_plotting_selection,
@@ -85,7 +81,6 @@ for x in range(0,735, 147):
 
 # In[10]:
 
-
 for x in range(0,735, 147):
     plot_heatmap(package_bio_codon_plotting_selection,
                  lib_type='ins', 
@@ -106,10 +101,9 @@ for x in range(0,735, 147):
                 save_name = None)
 
 
-# ### Rep substituions 
+# ### Rep substitutions 
 
 # In[11]:
-
 
 for x in range(0,735, 147):
     plot_heatmap(package_bio_codon_plotting_selection,
@@ -134,7 +128,6 @@ for x in range(0,735, 147):
 # ### Rep Insertions
 
 # In[12]:
-
 
 for x in range(0,735, 147):
     plot_heatmap(package_bio_codon_plotting_selection,
