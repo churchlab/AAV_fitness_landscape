@@ -91,7 +91,7 @@ def count_ligated_bars(output_path = '../data/',
             full_file_name = re.sub('R1', read_direction,lane_sub )
             print (full_file_name)
             if os.path.isfile(full_file_name) == False:
-                print ("file %s does not exsits" % full_file_name)
+                print ("file %s does not exist" % full_file_name)
                 continue
             full_file_list.append(full_file_name)
             if 'gz' in full_file_name:
@@ -123,7 +123,7 @@ def count_ligated_bars(output_path = '../data/',
     log.close()
 
 
-# example counting the barcodes for one fo the sample
+# example counting the barcodes for one of the sample
 
 # In[6]:
 

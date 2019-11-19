@@ -1,11 +1,11 @@
 
 # coding: utf-8
 
-# # Analysis of single mutant effect on biodisitrubtion in mice
+# # Analysis of single mutant effect on biodistribution  in mice
 # 
 # Analysis includes:
 # - correlation of mouse replicates 
-# - PCA of seleciton values across tissues 
+# - PCA of selection values across tissues 
 # - K-Means to determine mutation clusters
 # - Validation comparison 
 

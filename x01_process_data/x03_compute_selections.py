@@ -36,7 +36,7 @@ def drop_bad_reps(package_df):
 def compute_packaging_selection(df_in=None,
                       level='barcode',
                       wt_norm=True,
-                      sum_measurments=True,
+                      sum_measurements=True,
                       sum_techincal_replicates= True,
                       for_plotting=True,
                      drop=True):
@@ -45,9 +45,9 @@ def compute_packaging_selection(df_in=None,
     
     Args:
     df_in - this is packaging df 
-    level - either 'barcode', 'codon', or 'aa': chooses where to sum the measurments 
-    sum_measurments: chooses whether to sum measurments from different tiles (bbsI vs BsmbI)
-    for_plotting: if true, sums to the simplest form for plotting thus that all measurments which makup up a codon
+    level - either 'barcode', 'codon', or 'aa': chooses where to sum the measurements 
+    sum_measurements: chooses whether to sum measurements from different tiles (bbsI vs BsmbI)
+    for_plotting: if true, sums to the simplest form for plotting thus that all measurements which makeup up a codon
     or aa are given as one data point
     
     return df - a df with selection values, based on the above inputs 
@@ -94,19 +94,19 @@ def compute_packaging_selection(df_in=None,
         if lib == '0':
             freq_p =  df_in_g.loc[
                 :,pd_idx[promoter,'plasmid',:]].apply(lambda x: x/np.nansum(x))
-            if sum_measurments:
+            if sum_measurements:
                 freq_v = pd.DataFrame(df_in_g.loc[
                     :,pd_idx[promoter,'virus',['1','2','3','4'],:]].sum(axis=1)).apply(lambda x: x/np.nansum(x))
             else:
                 
-                if sum_measurments:
+                if sum_measurements:
                     freq_v = pd.DataFrame(df_in_g.loc[
                         :,pd_idx[promoter,'virus',['1','2','3','4'],:]].sum(axis=1)).apply(lambda x: x/np.nansum(x))
                 else:
                     freq_v = df_in_g.loc[
                         :,pd_idx[promoter,'virus',['1','2','3','4'],:]].apply(lambda x: x/np.nansum(x))
             selection = freq_v.div(freq_p.values[:,0],axis=0)
-            if sum_measurments:
+            if sum_measurements:
                 df[(promoter, lib)] = freq_v.div(freq_p.values[:,0],axis=0)
             else:
                 df = pd.concat([df, selection], axis=1)
@@ -115,7 +115,7 @@ def compute_packaging_selection(df_in=None,
             freq_p =  df_in_g.loc[:,pd_idx[promoter,'plasmid',lib,:]].apply(lambda x: x/np.nansum(x))
             freq_v = df_in_g.loc[:,pd_idx[promoter,'virus',lib,:]].apply(lambda x: x/np.nansum(x))
             selection = freq_v.div(freq_p.values[:,0],axis=0)
-            if sum_measurments:
+            if sum_measurements:
                 df[(promoter, lib)] = freq_v.div(freq_p.values[:,0],axis=0)
             else:
                 df = pd.concat([df, selection], axis=1)
@@ -127,7 +127,7 @@ def compute_packaging_selection(df_in=None,
     return df
 
 # p_df = compute_packaging_selection(
-#     package_counts,level='codon', wt_norm=True, sum_measurments=False, for_plotting=False)
+#     package_counts,level='codon', wt_norm=True, sum_measurements=False, for_plotting=False)
 # p_df
 
 
@@ -144,13 +144,13 @@ def compute_mouse_selections(package_counts,
     
     new_mouse_selection = mouse_counts
     # one tile is synthesized twice (with different enzymes), 
-        #dropping this level allows us to compute aa selecttion
+        #dropping this level allows us to compute aa selection
     if drop_tile: 
         mouse_counts.index = mouse_counts.index.droplevel(1)
         package_counts.index = package_counts.index.droplevel(1)
     
     #compute freq of packaging data for aa and barcode level
-    # we do this sperately for the two virus production reps (CMV1 & CMV2) since we inject both of them in different mice
+    # we do this separately for the two virus production reps (CMV1 & CMV2) since we inject both of them in different mice
     CMV12_barcode_summed = package_counts.loc[:, pd_idx['CMV' , :]].sum(axis=1)
     CMV12_barcode_summed_freq = CMV12_barcode_summed / CMV12_barcode_summed.sum()
     CMV_barcode_freq = package_counts.xs(

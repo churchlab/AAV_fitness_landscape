@@ -138,7 +138,7 @@ tm_65_percents_subs = tm_65_percents[tm_65_percents['abs_pos'].isin(np.arange(0,
 tm_65_percents_subs['abs_pos']  = tm_65_percents_subs['abs_pos'].apply(int)
 
 
-# ### load known AAV2 contatcs from VIPERDB 
+# ### load known AAV2 contacts from VIPERDB 
 # add selection values for each contact  
 # website: http://viperdb.scripps.edu/
 
@@ -247,7 +247,7 @@ def two_proprotions_confint(success_a, size_a, success_b, size_b, significance =
     z = stats.norm(loc = 0, scale = 1).ppf(confidence + significance / 2)
 
     # standard formula for the confidence interval
-    # point-estimtate +- z * standard-error
+    # point-estimate +- z * standard-error
     prop_diff = prop_b - prop_a
     confint = prop_diff + np.array([-1, 1]) * z * se
     return prop_diff, confint

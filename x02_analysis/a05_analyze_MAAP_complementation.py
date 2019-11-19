@@ -1,17 +1,16 @@
-#!/usr/bin/env python
+
 # coding: utf-8
 
 # # MAAP complementation analysis 
 # 
 # Here we analyze the data supporting discovery of the new gene MAAP.  
-# Analysis includes  
-# - constructuing a frameshift lookup table for detemrining effects 
-# - global look at MAAPs affect across gene, with or without trans complementation 
-# - bootstrap method for constrcuting p-values signfying stop codon importance in frame 2 
-# - valiation data for individual mutants
+# Analysis includes:  
+# - constructing a frameshift lookup table for determining effects 
+# - global look at MAAP's effect across gene, with or without trans complementation 
+# - bootstrap method for generating p-values signifying stop codon importance in frame 2 
+# - validation data for individual mutants
 
 # In[1]:
-
 
 import os
 import sys 
@@ -41,28 +40,27 @@ from paper_settings import PAPER_FONTSIZE
 from paper_settings import save_fig
 sns.set(**PAPER_PRESET)
 
-get_ipython().run_line_magic('reload_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
+get_ipython().magic(u'reload_ext autoreload')
+get_ipython().magic(u'autoreload 2')
 
 
-# ### load in data, need packaging data from MAAP experiments as well as original packaging data 
+# ### load in data, we use packaging data from MAAP experiments as well as original packaging data 
 
 # In[2]:
-
 
 maap_counts = x02_load_dataframes.load_MAAP_df()
 package_counts = x02_load_dataframes.load_packaging_df()
 
 
-# ### pEL plasmid labels describe the complement experiment which was run during packaging 
-# - pRep: only inlcude the pRep plasmid to facilitate normal packaging in library 
+# ### pEK plasmid labels describe the complement experiment which was run during packaging 
+# - pRep: only include the pRep plasmid to facilitate normal packaging in library 
 # - pEK_254: include a plasmid which contains pRep as well as the downstream wildtype MAAP region 
 # - pEK_256: include a plasmid which contains the downstream MAAP region, but with a stop codon substitution 
 # - pEK_258: same as above, but with a mutation to MAAP start codon   
-# we also ran bioligically packaging experiment replicates as well 
+#   
+# For each condition, there are two packaging experiment replicates
 
 # In[3]:
-
 
 maap_counts.head()
 
@@ -71,29 +69,25 @@ maap_counts.head()
 
 # In[4]:
 
-
 maap_selection = x03_compute_selections.compute_maap_selection(package_counts, maap_counts)
 
 
 # In[5]:
 
-
 maap_selection.head()
 
 
-# ### constrcut a table which informs what mutations were made in frame 2 
-# since the library contains all single mutations in frame 1, we need to convert these to the possible mutations made in frame 2 
+# ### construct a table which informs what mutations were made in frame 2 
+# since the library contains all single mutations in frame 1, we need to convert these to the  mutations made in frame 2 
 
 # In[6]:
-
 
 frameshift_meta_lookup_df = common.make_all_frame_lookup(LOOKUP_DF)
 
 
-# merge this new table with the selection data, and construct a few more useful columns for analysis
+# merge this new table with the selection data, and generate a few more useful columns for analysis
 
 # In[7]:
-
 
 maap_selection_and_lookup = frameshift_meta_lookup_df.merge(maap_selection.reset_index(), on=[ 'abs_pos','aa', 'codon'], how='inner')
 
@@ -107,7 +101,7 @@ for idx, row in maap_selection_and_lookup.iterrows():
     stop_obj.append(x)
 maap_selection_and_lookup['stop_maap'] = stop_obj
 
-## set up useful indeces
+## set up useful indices
 maap_selection_and_lookup = maap_selection_and_lookup.set_index(list(maap_selection_and_lookup.columns[:31]))
 maap_selection_and_lookup.set_index('stop_maap',append=True,inplace=True)
 maap_selection_and_lookup.index = maap_selection_and_lookup.index.droplevel([-5,-4,-3,-2])
@@ -118,16 +112,14 @@ maap_selection_and_lookup.drop_duplicates(inplace=True)
 maap_selection_and_lookup.xs((50,'L'), level=['abs_pos', 'aa'],drop_level=False)
 
 
-# ### from this, we take only the positions which contain at least one stop codon in frame 2 
+# ### take only the positions which contain at least one stop codon in frame 2 
 
 # In[8]:
-
 
 aa_pos_with_stops = maap_selection_and_lookup.xs(1, level='stop_maap',drop_level=False)
 
 
 # In[9]:
-
 
 aa_pos_with_stops.head()
 
@@ -135,7 +127,6 @@ aa_pos_with_stops.head()
 # reshape the dataframe for plotting  
 
 # In[10]:
-
 
 aa_pos_with_stops_index = aa_pos_with_stops.reset_index(
         )[['aa','abs_pos']]
@@ -154,16 +145,14 @@ maap_aa_has_stop_subset.head()
 
 # In[11]:
 
-
 maap_aa_has_stop_subset_copy = maap_aa_has_stop_subset.copy()
 maap_aa_has_stop_subset_copy.columns = maap_aa_has_stop_subset_copy.columns.droplevel([1,2,3])
 maap_aa_has_stop_subset_copy.head()
 
 
-# for each position compute the mean selection value for stop and non stop mutations
+# for each position, compute the mean selection value for stop and non-stop mutations
 
 # In[12]:
-
 
 maap_pos_mean_stop_unstack = maap_aa_has_stop_subset_copy.groupby(
     level=['abs_pos', 'aa', 'stop_maap']).mean().unstack(-1).dropna()
@@ -173,10 +162,9 @@ maap_pos_mean_stop_unstack = maap_aa_has_stop_subset_copy.groupby(
 maap_pos_mean_stop_unstack.query("abs_pos==53")
 
 
-# compute the global difference between stops and non stops in MAAP codons
+# compute the global difference between stops and non-stops in MAAP associated codons
 
 # In[13]:
-
 
 maap_df = maap_pos_mean_stop_unstack.mean().unstack()
 maap_df['div'] = maap_df[1] / maap_df[0]
@@ -186,65 +174,57 @@ maap_df
 
 # In[14]:
 
-
 maap_pos_mean_stop_unstack_stop_diff = maap_pos_mean_stop_unstack.apply(np.log2).groupby(
     level=0, axis=1).diff(axis=1).dropna(axis=1).apply(lambda x: 2**x)
 maap_pos_mean_stop_unstack_stop_diff.columns = maap_pos_mean_stop_unstack_stop_diff.columns.droplevel(1)
 maap_pos_mean_stop_unstack_stop_diff.head()
 
 
+# subset the relevant substitutions within the MAAP region
+
 # In[15]:
 
-
-## only consider subs here becuase inseretions have general negatvie trend 
 maap_pos_only_diff = maap_pos_mean_stop_unstack_stop_diff.loc[np.arange(0,735)].query('(abs_pos > 27) & (abs_pos<147)')
 
 
 # In[16]:
-
 
 maap_pos_only_diff.shape
 
 
 # In[17]:
 
-
 maap_pos_only_diff_outliers_rm = maap_pos_only_diff[(np.abs(stats.zscore(maap_pos_only_diff)) < 3).all(axis=1)]
 maap_pos_only_diff_outliers_rm.shape
 
 
-# drop two posiitons with strongest outlier data
+# two alleles contain a single data point greater than 5 standard deviations away from the mean. We drop all data at these positions to not consider them in analysis
 
 # In[18]:
-
 
 maap_pos_only_diff_drop = maap_pos_only_diff.drop([(50,'L'),(104,'V')])
 
 
-# ### p-values comparing WT to complementation with MAAP (pEK 254) or MAAP with start (pEK_256) or stop (pEK_258) mutations 
+# p-values comparing WT to complementation with MAAP (pEK 254) or MAAP with start (pEK_256) or stop (pEK_258) mutations 
 
 # In[19]:
-
 
 stats.mannwhitneyu(maap_pos_only_diff_drop['pRep'], maap_pos_only_diff_drop['pEK_254'])
 
 
 # In[20]:
 
-
 stats.mannwhitneyu(maap_pos_only_diff_drop['pRep'], maap_pos_only_diff_drop['pEK_256'])
 
 
 # In[21]:
 
-
 stats.mannwhitneyu(maap_pos_only_diff_drop['pRep'], maap_pos_only_diff_drop['pEK_258'])
 
 
-# ### load in the individual mutant validation data (from qPCR)
+# ### load in the individual mutant validation qPCR data 
 
 # In[22]:
-
 
 MAAP_dir = os.path.join(DATA_DIR, 'MAAP_validation_data')
 individual_mut_validation_df = pd.read_csv(os.path.join(MAAP_dir,'20190604_individual_mutant_titer_with_meta.csv' ))
@@ -255,7 +235,6 @@ competition_mut_validation_df.head()
 
 # In[23]:
 
-
 complement_dict = {'pRep':'+pRep', 'pRep-MAAP':'+pRep\nMAAP'}
 individual_mut_validation_df['complement_plot'] =individual_mut_validation_df['complement'].    apply(lambda x: complement_dict[x])
 individual_mut_validation_df.head()
@@ -263,22 +242,19 @@ individual_mut_validation_df.head()
 
 # In[24]:
 
-
 competition_mut_validation_df['complement_plot'] =competition_mut_validation_df['complement'].    apply(lambda x: complement_dict[x])
 competition_mut_validation_df.head()
 
 
 # In[25]:
 
-
 def mapper(x):
     return np.log2(np.mean(x))
 
 
-# ### plot affect of library with and without complementation, as well as individual mutants with or without MAAP in trans
+# ### plot effect of library with and without complementation, as well as individual mutants with or without MAAP in trans
 
 # In[26]:
-
 
 fig, ax =  plt.subplots(nrows=3, figsize = [2,3.5], gridspec_kw={'hspace':.6})
 
@@ -329,8 +305,10 @@ ax[0].set_ylim((-1.1,.75))
 # save_fig(fig,"a04_reviison_library_and_validation_complement.pdf" )
 
 
-# In[27]:
+# ### compute p-values for the MAAP complement conditions above
+# NOTE: This function is for a two-tailed t-test, since we are only concerned with whether MAAP mutants are deleterious, we can divide the p-values computed here in half generate the one-tailed value 
 
+# In[27]:
 
 competition_mut_validation_df.groupby(['Name', 'complement'])['log2_diff'].describe()
 
@@ -344,58 +322,27 @@ for mutant in competition_mut_validation_df['Name'].unique():
 
 # In[28]:
 
-
 maap_pos_only_diff_drop_log2 = maap_pos_only_diff_drop.stack().apply(np.log2).reset_index()
 maap_pos_only_diff_drop_log2.head()
 
 
 # In[29]:
 
-
-maap_pos_only_diff_drop_log2.query("abs_pos==83")
-
-
-# In[30]:
-
-
-# maap_aa_has_stop_subset_copy_tidy = maap_aa_has_stop_subset_copy.stack().to_frame().reset_index()
-# maap_aa_has_stop_subset_copy_tidy['virus_stop'] = maap_aa_has_stop_subset_copy_tidy['stop_maap'] + '-' +maap_aa_has_stop_subset_copy_tidy['level_4']
-
-# sns.barplot(x='level_4', y=0, hue='stop_gee')
-
-
-# In[31]:
-
-
-maap_aa_has_stop_subset_copy.query('abs_pos > 34').head()
-
-
-# In[32]:
-
-
-maap_aa_has_stop_subset_copy.query("abs_pos==59").query('stop_maap==1').apply(np.log2)
-
-
-# In[33]:
-
-
 maap_aa_has_stop_subset_copy['diff'] =  (maap_aa_has_stop_subset_copy['pEK_254']-maap_aa_has_stop_subset_copy['pRep'] ).apply(np.log2)
 
 maap_aa_has_stop_subset_copy.sort_values('diff', ascending=False).query('stop_maap == 1').query('abs_pos>25').query('abs_pos < 130').head()
 
 
-# In[34]:
-
+# In[30]:
 
 maap_aa_has_stop_subset_pos_avg= maap_aa_has_stop_subset_copy.loc[np.arange(0,735)].groupby(level=['abs_pos', 'stop_maap']).mean()
 maap_aa_has_stop_subset_pos_avg.head()
 
 
 # ### shuffle codons within a position and amino acid 
-# This gives us the null distribution for non-stop vs stop-codon effect, which we can compare to for p-value computing
+# This gives us the null distribution for non-stop vs stop-codon effect, which we can compare to for statistical analysis
 
-# In[35]:
-
+# In[31]:
 
 import time
 st = time.time()
@@ -429,8 +376,7 @@ print ('time to run %.03f' % ((time.time()-st)/60.0))
 boostrap_df.query("abs_pos == 32").head(6)
 
 
-# In[36]:
-
+# In[32]:
 
 boostrap_df_aa_mean = boostrap_df.groupby(level=['abs_pos','aa','stop_maap']).mean().apply(np.log10)
 
@@ -439,8 +385,7 @@ boostrap_df_aa_mean_diff = boostrap_df_aa_mean.unstack().groupby(
 boostrap_df_aa_mean_diff.query("abs_pos == 27")
 
 
-# In[37]:
-
+# In[33]:
 
 maap_stop_aa_mean = maap_aa_has_stop_subset.groupby(['abs_pos','aa', 'stop_maap']).mean().apply(
     np.log10)
@@ -449,34 +394,29 @@ maap_stop_aa_mean_diff = maap_stop_aa_mean.unstack().groupby(
 maap_stop_aa_mean_diff.query("abs_pos == 27").head()
 
 
-# In[38]:
-
+# In[34]:
 
 boostrap_df_aa_mean_diff.dropna(how='all').shape
 
 
-# In[39]:
-
+# In[35]:
 
 boostrap_df_aa_mean_diff.loc[maap_stop_aa_mean_diff.index].shape
 
 
-# In[40]:
-
+# In[36]:
 
 maap_stop_aa_mean_diff.dropna(how='all').shape
 
 
-# In[41]:
-
+# In[37]:
 
 maap_stop_aa_mean_diff.shape
 
 
-# ### using the distribuiton from shuffled codons, calculate z-scores and p-values
+# ### using the distribution  from shuffled codons, calculate z-scores and p-values
 
-# In[42]:
-
+# In[38]:
 
 def compute_boostrap_pvalues(bootsrap_diff_df, gene_diff_df):
     bootsrap_diff_df = bootsrap_diff_df.loc[gene_diff_df.index]
@@ -512,8 +452,7 @@ maap_pvals = compute_boostrap_pvalues(boostrap_df_aa_mean_diff, maap_stop_aa_mea
 maap_pvals.head()
 
 
-# In[43]:
-
+# In[39]:
 
 bootstrap_diff_pos_mean = boostrap_df_aa_mean_diff.groupby(level='abs_pos').mean()
 maap_diff_pos_mean = maap_stop_aa_mean_diff.groupby(level='abs_pos').mean()
@@ -522,15 +461,13 @@ bootstrap_diff_pos_mean_r10 = bootstrap_diff_pos_mean.rolling(100, min_periods=0
 maap_diff_pos_mean_r10 = maap_diff_pos_mean.rolling(100, min_periods=0).mean()
 
 
-# In[44]:
-
+# In[40]:
 
 maap_pos_pvalues = compute_boostrap_pvalues(bootstrap_diff_pos_mean, maap_diff_pos_mean)
 # maap_pos_pvalues.query('abs_pos==32')
 
 
-# In[45]:
-
+# In[41]:
 
 bootstrap_diff_pos_mean_r10 = bootstrap_diff_pos_mean.rolling(30, min_periods=0).mean()
 maap_diff_pos_mean_r10 = maap_diff_pos_mean.rolling(30, min_periods=0).mean()
@@ -540,8 +477,7 @@ maap_pos_pvalues_rolling = compute_boostrap_pvalues(
 
 # ### plot fitness as well as p-value at each position on the capsid
 
-# In[46]:
-
+# In[42]:
 
 def plot_fitness_diff( maap_aa_has_stop_subset_pos_avg, column,ax=None, ):
     if not ax:
@@ -565,8 +501,7 @@ def plot_fitness_diff( maap_aa_has_stop_subset_pos_avg, column,ax=None, ):
         return fig
 
 
-# In[47]:
-
+# In[43]:
 
 def plot_pvalues(pval_df,smooth=None,
                  figname=None,
@@ -652,11 +587,15 @@ def plot_pvalues(pval_df,smooth=None,
         save_fig(fig, figname)
 
 
-# In[48]:
-
+# In[44]:
 
 ## note: to exactly reproduce figure in paper, you will need to run shuffle_codons_in_aa_pos() with num_iter=5000
-## this will take >10 hours on standard machine and create 10gb file
+## this will take >10 hours on standard machine and create a 10gb file
 plot_pvalues(maap_pos_pvalues_rolling.reset_index(),zscore=True,
              b_t_a=[1.02,.93],figsize=[4,(1.2*.66)],complement=False)
+
+
+# In[ ]:
+
+
 

@@ -5,7 +5,7 @@
 # 
 # Analysis of how single mutations to the AAV2 capsid affect packaging  
 # Includes: 
-# - analysis of library and number of mutations succesful assayed at barcode/codon/amino acid level 
+# - analysis of library and number of mutations successful assayed at barcode/codon/amino acid level 
 # - plots comparing plasmid frequency to codon frequency 
 # - packaging experiment replicates analysis 
 # - analysis of stop codon mutations vs WT
@@ -141,12 +141,12 @@ plt.xlim(-6.5, -3.5)
 plt.ylim(-8, -3)
 
 
-# ## Replicate analsysis (Fig. S2B-D)
+# ## Replicate analysis (Fig. S2B-D)
 
 # In[12]:
 
 package_bio_replicates_selection = x03_compute_selections.compute_packaging_selection(
-    packaging_counts,level='codon', wt_norm=True, sum_measurments=False, for_plotting=False)
+    packaging_counts,level='codon', wt_norm=True, sum_measurements=False, for_plotting=False)
 package_bio_replicates_selection.head()
 
 
@@ -215,7 +215,7 @@ plt.show()
 # In[16]:
 
 package_barcode_full_sum = x03_compute_selections.compute_packaging_selection(
-    packaging_counts,level='barcode', wt_norm=True, sum_measurments=True, for_plotting=False)
+    packaging_counts,level='barcode', wt_norm=True, sum_measurements=True, for_plotting=False)
 
 
 # In[17]:
@@ -300,7 +300,7 @@ package_barcode_full_sum.xs(1,level='wt_bc').describe()
 # In[27]:
 
 package_aa_full_sum = x03_compute_selections.compute_packaging_selection(
-    packaging_counts,level='aa', wt_norm=True, sum_measurments=True, for_plotting=True)
+    packaging_counts,level='aa', wt_norm=True, sum_measurements=True, for_plotting=True)
 
 
 # In[28]:
